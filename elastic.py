@@ -12,6 +12,11 @@ class Elastic:
 
         self.client = Elasticsearch(*env.elastic_args, **env.elastic_kwargs)
 
+    def list_indices(self):
+        return self.client.options(ignore_status=[400, 404]).indices.get_alias(
+            name="dataset"
+        )
+
     def index_dataset(
         self,
         dataloader: DataLoader,
@@ -27,6 +32,10 @@ class Elastic:
 
         if drop_index:
             self.client.options(ignore_status=[400, 404]).indices.delete(index=index)
+            self.client.options(ignore_status=[400, 404]).indices.delete_alias(
+                index=index,
+                name="dataset",
+            )
 
         list_res = []
 
@@ -48,5 +57,8 @@ class Elastic:
                 res = helpers.parallel_bulk(**args)
 
             list_res.append(res)
+
+        if index not in self.list_indices():
+            self.client.indices.put_alias(index=index, name="dataset")
 
         return list_res
