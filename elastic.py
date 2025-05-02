@@ -1,9 +1,44 @@
 from typing import Literal
 from torch.utils.data import DataLoader
 from elasticsearch import Elasticsearch, helpers
+from elasticsearch.dsl import Search, Q, Query
 from tqdm import tqdm
 import pandas as pd
 from utils.env import Env
+
+
+class ElasticFilter:
+    def __init__(self, query: Query):
+        self.query = query
+
+    @staticmethod
+    def range(field_name: str, start: float, end: float):
+        query = {"range": {field_name: {"gte": start, "lte": end}}}
+
+        return ElasticFilter(Q(query))
+
+    @staticmethod
+    def match(field_name: str, value: int):
+        query = {"term": {field_name: value}}
+
+        return ElasticFilter(Q(query))
+
+    @staticmethod
+    def str_match(field_name: str, value: str):
+        query = {"match": {field_name: value}}
+
+        return ElasticFilter(Q(query))
+
+    @staticmethod
+    def aggregate(filters: list["ElasticFilter"]):
+        queries = []
+
+        for f in filters:
+            queries.append(f.query)
+
+        query = Q("bool", must=queries)
+
+        return ElasticFilter(query)
 
 
 class Elastic:
@@ -20,6 +55,16 @@ class Elastic:
     def list_features(self, index: str) -> dict:
         mapping = self.client.indices.get_mapping(index=index)
         return mapping[index]["mappings"]["properties"]
+
+    def filter_data(self, index: str, filter: ElasticFilter):
+        s = Search(using=self.client, index=index)
+        s = s.query(filter.query)
+
+        res = s.execute()
+
+        hits = [hit.to_dict() for hit in res.hits]
+
+        return hits
 
     def index_dataset(
         self,
