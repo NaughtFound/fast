@@ -12,10 +12,14 @@ class Elastic:
 
         self.client = Elasticsearch(*env.elastic_args, **env.elastic_kwargs)
 
-    def list_indices(self):
+    def list_indices(self) -> dict:
         return self.client.options(ignore_status=[400, 404]).indices.get_alias(
             name="dataset"
         )
+
+    def list_features(self, index: str) -> dict:
+        mapping = self.client.indices.get_mapping(index=index)
+        return mapping[index]["mappings"]["properties"]
 
     def index_dataset(
         self,
