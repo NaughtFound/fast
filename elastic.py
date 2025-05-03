@@ -4,7 +4,7 @@ from elasticsearch import Elasticsearch, helpers
 from elasticsearch.dsl import Search, Q, Query
 from tqdm import tqdm
 import pandas as pd
-from utils.env import Env
+from .utils.env import Env
 
 
 class ElasticFilter:
