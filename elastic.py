@@ -56,6 +56,26 @@ class Elastic:
         mapping = self.client.indices.get_mapping(index=index)
         return mapping[index]["mappings"]["properties"]
 
+    def calc_data_range(self, index: str) -> dict:
+        fields = list(self.list_features(index).keys())
+
+        s = Search(using=self.client, index=index)
+
+        for field in fields:
+            s.aggs.bucket(f"{field}_stats", "stats", field=field)
+
+        res = s.execute()
+
+        results = {
+            field: {
+                "min": res.aggregations[f"{field}_stats"].min,
+                "max": res.aggregations[f"{field}_stats"].max,
+            }
+            for field in fields
+        }
+
+        return results
+
     def filter_data(self, index: str, filter: ElasticFilter):
         s = Search(using=self.client, index=index)
         s = s.query(filter.query)
