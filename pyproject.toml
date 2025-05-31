@@ -1,0 +1,18 @@
+[project]
+name = "fast"
+version = "1.0.0"
+description = ""
+authors = [{ name = "Mohammad Ghazanfari", email = "mgh.5225@gmail.com" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+dependencies = ["python-dotenv==1.1.0", "elasticsearch==9.0.1"]
+
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fast", "fast.*"]
