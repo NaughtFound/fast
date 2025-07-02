@@ -5,7 +5,7 @@ description = ""
 authors = [{ name = "Mohammad Ghazanfari", email = "mgh.5225@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = ["python-dotenv==1.1.0", "elasticsearch==9.0.1"]
 
 
